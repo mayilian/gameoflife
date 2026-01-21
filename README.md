@@ -113,3 +113,46 @@ src/
 - **Toroidal Grid**: Edges wrap to opposite sides
 - **Preset Patterns**: Canonical patterns for visual verification of correctness
 - **Coordinate Initialization**: Explicit cell placement for custom testing
+
+## Complexity Analysis
+
+| Operation | Time | Space |
+|-----------|------|-------|
+| `nextGeneration()` | O(w × h) | O(w × h) |
+| `countAliveNeighbors()` | O(1) | O(1) |
+| `getNextState()` | O(1) | O(1) |
+| `render()` | O(w × h) | O(w × h) |
+
+- **Per generation**: O(w × h) time, O(w × h) auxiliary space for the temporary grid
+- **Total memory**: 2 × w × h cells (current grid + temporary grid during update)
+- The temporary grid is necessary because all cells must update simultaneously
+
+## Limitations & Edge Cases
+
+### Known Limitations
+
+| Limitation | Reason | Potential Improvement |
+|------------|--------|----------------------|
+| **Large grids (10,000×10,000)** | O(n²) memory and time per generation | Use sparse representation (HashSet of live cells) for grids with low density |
+| **Not thread-safe** | Mutable shared state in Grid | Immutable Grid + functional updates, or synchronization |
+| **Memory per generation** | Allocates new grid each generation | Double-buffering (swap two pre-allocated grids) |
+| **ANSI terminal required** | Colors/clearing use ANSI escape codes | Fallback to plain ASCII mode for unsupported terminals |
+
+### Edge Cases
+
+| Case | Behavior |
+|------|----------|
+| **1×1 grid** | Single cell always dies (0 neighbors, underpopulation) |
+| **Empty grid** | Stays empty forever |
+| **Full grid** | All cells die from overpopulation (8 neighbors each), then stays empty |
+| **Negative coordinates** | Handled via `Math.floorMod()` - wraps correctly |
+| **Probability 0.0** | Empty grid |
+| **Probability 1.0** | Full grid → all die → empty |
+
+### What This Implementation Does NOT Handle
+
+- **Infinite grids**: Fixed dimensions with toroidal wrapping instead
+- **Stabilization detection**: No detection of still lifes or oscillators reaching steady state
+- **Pattern file loading**: No RLE/Life 1.06 file format support (could be added)
+- **History/undo**: No generation history stored
+- **GUI**: Console-only (but Renderer is decoupled for easy extension)
